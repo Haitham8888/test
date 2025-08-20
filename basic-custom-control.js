@@ -1,39 +1,34 @@
 (function () {
     var container = this.container;
-    container.innerHTML = "";
+    container.innerHTML = ""; // Clear any existing content
 
-    if (!this.data || !this.data.rows || this.data.rows.length === 0) {
-        container.innerHTML = "<p>No data available.</p>";
-        return;
-    }
+    // Create a map container and style it
+    var mapDiv = document.createElement("div");
+    mapDiv.style.height = "500px"; // Set the map height
+    mapDiv.style.width = "100%"; // Set the map width
+    container.appendChild(mapDiv);
 
-    var table = document.createElement("table");
-    table.style.borderCollapse = "collapse";
-    table.style.width = "100%";
+    // Initialize the map (centered on a default latitude and longitude)
+    var map = L.map(mapDiv).setView([51.505, -0.09], 13); // Default center (London, adjust if necessary)
 
-    // Table header
-    var header = document.createElement("tr");
-    this.data.metadata.forEach(function (col) {
-        var th = document.createElement("th");
-        th.style.border = "1px solid #ccc";
-        th.style.padding = "5px";
-        th.textContent = col.name;
-        header.appendChild(th);
-    });
-    table.appendChild(header);
+    // Add OpenStreetMap tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
 
-    // Table rows
-    this.data.rows.forEach(function (row) {
-        var tr = document.createElement("tr");
-        row.forEach(function (cell) {
-            var td = document.createElement("td");
-            td.style.border = "1px solid #ccc";
-            td.style.padding = "5px";
-            td.textContent = cell ? cell.value : "";
-            tr.appendChild(td);
+    // Loop through the data rows and place markers on the map
+    if (this.data && this.data.rows) {
+        this.data.rows.forEach(function (row) {
+            var lat = row[0].value;  // Assuming first data item is latitude
+            var lon = row[1].value;  // Assuming second data item is longitude
+            var name = row[2].value; // Assuming third data item is name or description
+
+            // Add marker for each row of data
+            if (lat && lon) {
+                L.marker([lat, lon])
+                    .addTo(map)
+                    .bindPopup(name || "No description");
+            }
         });
-        table.appendChild(tr);
-    });
-
-    container.appendChild(table);
+    }
 })();
